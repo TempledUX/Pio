@@ -247,6 +247,9 @@ class Aplicacion():
             self.solveroutput.insert(END, "Algoritmo elegido: Bellman-Kalaba\nPermite encontrar todos los caminos mínimos del grafo hasta un nodo final.\n\n")
         elif self.selalgoritmo.get() == 'Floyd':
             self.solveroutput.insert(END, "Algoritmo elegido: Floyd\nPermite calcular los caminos mínimos entre dos pares cualesquiera de nodos.\n\n")
+        elif self.selalgoritmo.get() == 'Solin':
+            self.solveroutput.insert(END, "Algoritmo elegido: Solin\nPermite calcular el árbol recubridor mínimo o máximo de un grafo.\n")
+            self.solveroutput.insert(END, "\nObservación: dado que trabajamos con un árbol, asigna los valores a la mitad de la matriz y simetrizala.\n\n")
         self.solveroutput.insert(END, "Actualiza la información del problema antes de continuar...\n")
 
     def modosubpanelupdate(self):
@@ -289,6 +292,8 @@ class Aplicacion():
             self.solveBellman()
         elif self.selalgoritmo.get() == "Floyd":
             self.solveFloyd()
+        elif self.selalgoritmo.get() == "Solin":
+            self.solveSolin(self.selmodosolin.get())
 
     def lazosCallback(self):
         if self.loops.get() == 1:
@@ -424,6 +429,65 @@ class Aplicacion():
             k = k + 1
         self.outputText("\nEl algoritmo ha finalizado. La matriz de costes del final contiene los caminos mínimos para ir de un nodo a otro y la matriz de penúltimos nodos del final contiene los penúltimos nodos de los caminos mínimos que unen dos nodos. \n")
             
+    def solveSolin(self,mode):
+        self.solveroutput.delete('1.0',END)
+        self.solveroutput.insert(END, "Resolución del problema mediante el algoritmo de Solin: \n \n")
+        numNodos = int(self.entrynumnodos.get())
+        matrizCostes = {}
+
+        def searchForKey(value, excluded=[],searchRows=range(numNodos)):
+            for key in matrizCostes.keys() - set(excluded):
+                if key[0] not in searchRows: continue
+                if matrizCostes[key] == value:
+                    return key
+
+        def getMinFromMatrix(matriz):
+            minimosPorFila = set()
+            for i in range(numNodos):
+                minimosPorFila.add(min({matriz[(i,j)] for j in range(numNodos)}))
+            minimo = min(minimosPorFila)
+            return searchForKey(minimo)
+
+        keys = []
+
+        if mode == 'Maximizar':
+            for key in self.matriz.keys():
+                if self.matriz[key].get() == '' or self.matriz[key].get() == '0': matrizCostes[key] = 0
+                else: matrizCostes[key] = -int(self.matriz[key].get())
+        else:
+            for key in self.matriz.keys():
+                if self.matriz[key].get() == '' or self.matriz[key].get() == '0': matrizCostes[key] = inf
+                else: matrizCostes[key] = int(self.matriz[key].get())
+
+        firstKey = getMinFromMatrix(matrizCostes)
+        keys.append(firstKey)
+        searchTarget = []
+        searchTarget.append([matrizCostes[(firstKey[1],j)] for j in range(numNodos) if j != firstKey[1]])
+        searchRows = {firstKey[1]}
+        while True:
+            flattenSearchTarget = [num for sublist in searchTarget for num in sublist]
+            target = min(flattenSearchTarget)
+            newKey = searchForKey(target,keys,searchRows)
+            keys.append(newKey)
+            if len(keys) == numNodos: break
+            columnasExcluidas = [key[1] for key in keys]
+            searchRows = searchRows.union({newKey[1]})
+            searchTarget = []
+            for key in keys:
+                searchTarget.append([matrizCostes[(key[1],j)] for j in range(numNodos) if j not in columnasExcluidas])
+        self.outputText("\nEl algoritmo ha finalizado. La matriz que se presenta a continuación es la que queda tras aplicar el algoritmo de Solin: \n")
+        
+        for key in matrizCostes:
+            if key not in keys: matrizCostes[key] = '-'  
+
+        if mode == 'Maximizar':
+            for key in matrizCostes:
+                if matrizCostes[key] != '-':
+                    matrizCostes[key] = -matrizCostes[key]
+
+        for i in range(numNodos):
+            self.outputText("{}\n".format(str([matrizCostes[(i,j)] for j in range(numNodos)])))
+
 
     def outputText(self,text):
         self.solveroutput.insert(END,text)
