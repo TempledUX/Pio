@@ -2,6 +2,11 @@ from tkinter import *
 from tkinter import ttk,font
 from math import inf
 
+# Pio - TempledUX
+# Last edit: 27/10/2019
+# Contact: edux98g@gmail.com
+# Public license: MIT
+
 class Grafo():
     def __init__(self, nodos:set, aristas:set, costes:dict):
         self.nodos = nodos
