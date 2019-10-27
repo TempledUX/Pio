@@ -11,7 +11,7 @@ Pio es capaz de utilizar los siguientes algoritmos:
 
 Pio ofrece la resolución paso por paso de cada algoritmo además de la solución final.
 
-# Cosas que faltan por implementar (en progreso)
+### Cosas que faltan por implementar (en progreso)
 - Problemas de transporte y de asignación y un motor de programación lineal que los resuelva.
 - Opción de guardar la información del problema y el resultado en un archivo y después poder cargarlo desde el programa.
 - Localizalización en más idiomas (de momento solo disponible en español)
