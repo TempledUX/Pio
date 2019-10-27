@@ -32,6 +32,7 @@ class Aplicacion():
         self.referenciasnodoslazo = []
         self.celdasTitulo = {}
         self.grafo = 0
+        self.demandasProducciones = {}
 
         #Panel de información y subpaneles
         self.panelmodo = ttk.LabelFrame(self.principal, text="Configuración del problema")
@@ -128,12 +129,16 @@ class Aplicacion():
             self.ajustarTitulo(caja,i)
             caja.configure(state="disabled")
             self.celdasTitulo['c'+str(i)] = caja
+            if self.selalgoritmo.get() == 'Transporte':
+                caja.bind("<Button-1>", lambda event, node=i, yo=self : ElementViewTransporte(self.principal, node,yo))
             caja.grid(column=i+1,row=0,padx=3,pady=3,sticky=(N,S,E,W))
         for i in range(numNodos):
             caja = ttk.Entry(self.panelmatrizmain,width=5)
             self.ajustarTitulo(caja,i)
             caja.configure(state="disabled")
             self.celdasTitulo['r'+str(i)] = caja
+            if self.selalgoritmo.get() == 'Transporte':
+                caja.bind("<Button-1>", lambda event, node=i, yo=self : ElementViewTransporte(self.principal, node,yo))
             caja.grid(column=0,row=i+1,padx=3,pady=3,sticky=(N,S,E,W))
         #Matriz de datos
         for row in range(numNodos):
@@ -171,6 +176,7 @@ class Aplicacion():
             ln = self.lastnodedijkstra.get()
             #Limpiar celdas
             self.dijkstraClearTitles()
+            self.unbindTitles()
             #Asignar datos
             for celda in [self.celdasTitulo['c'+fn],self.celdasTitulo['r'+fn]]:
                 celda.configure(state="enabled")
@@ -183,10 +189,15 @@ class Aplicacion():
         elif self.selalgoritmo.get() == "Bellman-Kalaba":
             ln = self.lastnodebellman.get()
             self.dijkstraClearTitles()
+            self.unbindTitles()
             for celda in [self.celdasTitulo['c'+ln],self.celdasTitulo['r'+ln]]:
                 celda.configure(state="enabled")
                 celda.insert(END,'*D')
                 celda.configure(state="disabled")
+        elif self.selalgoritmo.get() == 'Transporte':
+            self.dijkstraClearTitles()
+            for celda in self.celdasTitulo.values():
+                celda.bind("<Button-1>", lambda event, node=int(celda.get()), yo=self : ElementViewTransporte(self.principal, node,yo))
         self.switchMatrixButtons('enabled')
         self.solveroutput.insert(END, "Esperando orden para ejecutar resolución...\n")
     
@@ -196,6 +207,11 @@ class Aplicacion():
             index = celda.get().find('*')
             if index != -1: celda.delete(index,END)
             celda.configure(state="disabled")
+
+    def unbindTitles(self):
+        for celda in self.celdasTitulo.values():
+            celda.unbind("<Button-1>")
+        self.demandasProducciones = {}
 
     def dropMatrix(self):
         for widget in self.panelmatrizmain.grid_slaves():
@@ -488,8 +504,100 @@ class Aplicacion():
         for i in range(numNodos):
             self.outputText("{}\n".format(str([matrizCostes[(i,j)] for j in range(numNodos)])))
 
-
     def outputText(self,text):
         self.solveroutput.insert(END,text)
+
+    def getDemandasProducciones(self,nodo):
+        return self.demandasProducciones.get(nodo, (2,0))
+
+    def updateDemandasProducciones(self,nodo,value):
+        self.demandasProducciones[nodo] = value
+
+class ElementViewTransporte():
+    def __init__(self,master,nodo,masterSelf):
+        self.principal = master
+        self.root = Toplevel(master)
+        self.root.grab_set()
+        self.root.title("Ajustar nodo {}".format(nodo))
+        w = self.root.winfo_reqwidth()
+        h = self.root.winfo_reqheight()
+        ws = self.root.winfo_screenwidth()
+        hs = self.root.winfo_screenheight()
+        x = (ws/2) - (w/2)
+        y = (hs/2) - (h/2)
+        self.root.geometry('250x120+%d+%d' % (x-50, y-50))
+        self.root.resizable(0,0)
+
+        self.nodo = nodo
+        self.masterSelf = masterSelf
+
+        self.panelorigen = ttk.Frame(self.root)
+        self.paneldestino = ttk.Frame(self.root)
+        self.botonera = ttk.Frame(self.root)
+
+        self.origendestinoVar = IntVar(self.root)
+        self.origenCheck = ttk.Radiobutton(self.panelorigen, text="Origen", variable=self.origendestinoVar, command=self.origenCallback, value=1)
+        self.producionLabel = ttk.Label(self.panelorigen, text="Producción:")
+        self.producionEntry = ttk.Entry(self.panelorigen, width=7)
+        self.destinationCheck = ttk.Radiobutton(self.paneldestino, text="Destino", variable=self.origendestinoVar, command=self.destinationCallback, value=2)
+        self.demandaLabel = ttk.Label(self.paneldestino, text="Demanda:")
+        self.demandaEntry = ttk.Entry(self.paneldestino, width=7)
+        self.exitButton = ttk.Button(self.botonera, text="Guardar", command=self.save)
+        self.none = ttk.Radiobutton(self.botonera, text="Nodo intermedio", variable=self.origendestinoVar, value=3, command=self.mediumNodeCallback)
+
+        datosNodo = self.masterSelf.getDemandasProducciones(self.nodo)
+        if datosNodo[0] == 0:
+            self.demandaEntry.configure(state="disabled")
+            self.origendestinoVar.set(1)
+            self.producionEntry.insert(0, datosNodo[1])
+        elif datosNodo[0] == 1:
+            self.producionEntry.configure(state="disabled")
+            self.origendestinoVar.set(2)
+            self.demandaEntry.insert(0, datosNodo[1])
+        elif datosNodo[0] == 2:
+            self.producionEntry.configure(state="disabled")
+            self.demandaEntry.configure(state="disabled")
+            self.origendestinoVar.set(3)
+
+        self.panelorigen.pack(side=TOP,fill=X,expand=True,padx=5,pady=5)
+        self.paneldestino.pack(side=TOP,fill=X,expand=True,padx=5,pady=5)
+        self.botonera.pack(side=TOP,fill=X,expand=True,padx=5,pady=5)
+
+        self.origenCheck.pack(side=LEFT,fill=X,expand=True,padx=5,pady=0)
+        self.producionLabel.pack(side=LEFT,fill=X,expand=True,padx=5,pady=0)
+        self.producionEntry.pack(side=LEFT,fill=X,expand=True,padx=5,pady=0)
+        self.destinationCheck.pack(side=LEFT,fill=X,expand=True,padx=5,pady=0)
+        self.demandaLabel.pack(side=LEFT,fill=X,expand=True,padx=5,pady=0)
+        self.demandaEntry.pack(side=LEFT,fill=X,expand=True,padx=5,pady=0)
+        self.exitButton.pack(side=RIGHT,fill=NONE,expand=False,padx=5,pady=5)
+        self.none.pack(side=LEFT,fill=NONE,expand=False,padx=5,pady=5)
+
+    def origenCallback(self):
+        self.demandaEntry.delete(0,END)
+        self.demandaEntry.configure(state="disabled")
+        self.producionEntry.configure(state="enabled")
+
+    def destinationCallback(self):
+        self.producionEntry.delete(0,END)
+        self.producionEntry.configure(state="disabled")
+        self.demandaEntry.configure(state="enabled")
+
+    def mediumNodeCallback(self):
+        self.demandaEntry.delete(0,END)
+        self.producionEntry.delete(0,END)
+        self.demandaEntry.configure(state="disabled")
+        self.producionEntry.configure(state="disabled")
+
+    def save(self):
+        if self.origendestinoVar.get() == 1:
+            valor = int(self.producionEntry.get())
+            self.masterSelf.updateDemandasProducciones(self.nodo,(0,valor))
+        elif self.origendestinoVar.get() == 2:
+            valor = int(self.demandaEntry.get())
+            self.masterSelf.updateDemandasProducciones(self.nodo,(1,valor))
+        elif self.origendestinoVar.get() == 3:
+            self.masterSelf.updateDemandasProducciones(self.nodo,(2,0))
+        self.root.destroy()
+
 
 Aplicacion()
