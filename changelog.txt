@@ -1,0 +1,12 @@
+Libraries:
+1) tkinter - GUI
+2) NumPy - Soporte para matrices
+
+Changelog:
+20/01/2020
+- Documentación
+- operationStatus var. Control de flujo del programa
+- Modificaciones de títulos (*D, *P) para el modo de transporte
+19/01/2020
+- Comprobación de conexidad del grafo
+- La clase grafo ahora puede construir la matriz de adyacencia
