@@ -15,4 +15,3 @@ Pio ofrece la resolución paso por paso de cada algoritmo además de la solució
 - Problemas de transporte y de asignación y un motor de programación lineal que los resuelva.
 - Opción de guardar la información del problema y el resultado en un archivo y después poder cargarlo desde el programa.
 - Localizalización en más idiomas (de momento solo disponible en español)
-- Comprobación de datos introducidos y prevención de errores por parte del usuario (e.g.: que no se puedan introducir símbolos que no sean números donde deberían ir números)
