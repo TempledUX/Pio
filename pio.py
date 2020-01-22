@@ -1,9 +1,10 @@
 from tkinter import *
-from tkinter import ttk,font
+from tkinter import ttk,font,messagebox
 from math import inf
+import numpy as np
 
 # Pio - TempledUX
-# Last edit: 27/10/2019
+# Last edit: 10/01/2020
 # Contact: edux98g@gmail.com
 # Public license: MIT
 
@@ -23,7 +24,27 @@ class Grafo():
         return self.costes[arista]
 
     def distancia(self,nodo1,nodo2):
+        """
+        Devuelve el coste entre dos nodos (no la distancia)
+        """
         return self.costes.get((nodo1,nodo2),inf)
+
+    def buildMatrizAdyacencia(self):
+        """
+        Construye la matriz de adyacencia en base a la información del grafo como un ndarray de NumPy y lo devuelve
+        """
+        numNodos = len(self.nodos)
+        matriz = np.empty((numNodos,numNodos))
+        for nodo in sorted(self.nodos):
+            nodolista = []
+            for nodo2 in sorted(self.nodos):
+                if (nodo,nodo2) in self.aristas:
+                    nodolista.append(1)
+                else:
+                    nodolista.append(0)
+            matriz[nodo] = nodolista
+        return matriz
+
 
 class Aplicacion():
     def __init__(self):
@@ -33,11 +54,29 @@ class Aplicacion():
 
         self.botoneraDibujada = False
 
+        """
+        -------------------------------------------------------------------------------
+        Documentación de las variables
+        -------------------------------------------------------------------------------
+        matriz: diccionario con los valores de la matriz
+        referenciasnodoslazo: lista que guarda las entradas que representan lazos
+        celdasTitulo: diccionario con las entradas que representan nodos de la matriz (Acceder con ri (fila i) o cj (columna j))
+        grafo: variable auxiliar para guardar un objeto de tipo Grafo asociado a la matriz del problema
+        demandasProducciones: diccionario con la demanda o producción de cierto nodo. Leyenda: las claves son [nodo (int)] = (k,valor) con
+            k = 0 -> Producción
+            k = 1 -> Demanda
+            k = 2 -> Nodo intermedio
+        operationStatus: estado del programa. Hay 3 opciones:
+            0: matriz sin configurar
+            1: datos sin actualizar (semiconfigurado)
+            2: preparado para resolución
+        """
         self.matriz = {}
         self.referenciasnodoslazo = []
         self.celdasTitulo = {}
         self.grafo = 0
         self.demandasProducciones = {}
+        self.operationStatus = 0
 
         #Panel de información y subpaneles
         self.panelmodo = ttk.LabelFrame(self.principal, text="Configuración del problema")
@@ -120,7 +159,65 @@ class Aplicacion():
 
         self.principal.mainloop()
 
+    def checkErrors(self):
+        """
+        Comprueba errores. Si todo está correcto devuelve True, en caso contrario devuelve False.
+        """
+        #Numero de nodos de la matriz
+        try:
+            numNodos = int(self.entrynumnodos.get())
+        except ValueError:
+            messagebox.showerror("Entrada vacía o inválida", "Especifica un número de nodos correcto antes de continuar.")
+            return False
+        algoritmo = self.selalgoritmo.get()
+        if numNodos > 25:
+            messagebox.showerror("Valor fuera de rango", "El número de nodos es demasiado grande. El máximo de nodos disponible es 25")
+            return False
+        #Algoritmo elegido
+        if algoritmo == '':
+            messagebox.showerror("Entrada vacía o invalida","Especifica un algoritmo de resolución antes de continuar.")
+            return False
+        if algoritmo == "Dijkstra":
+            #Sintaxis
+            try:
+                fn = int(self.firstnodedijkstra.get())
+                ln = int(self.lastnodedijkstra.get())
+            except ValueError:
+                messagebox.showerror("Entrada vacía o inválida","Configura adecuadamente el nodo inicial y final para el algoritmo de Dijkstra y después actualiza los datos.")
+                return False
+            #Rango
+            fn = int(self.firstnodedijkstra.get())
+            ln = int(self.lastnodedijkstra.get())
+            limite = numNodos
+            if fn < 0 or fn > limite-1:
+                messagebox.showerror("Valor fuera de rango", "El valor introducido para el nodo inicial no se corresponde con ningún nodo existente. Observación: los nodos se numeran empezando desde el 0.")
+                return False
+            if ln < 0 or ln > limite-1:
+                messagebox.showerror("Valor fuera de rango", "El valor introducido para el nodo final no se corresponde con ningún nodo existente. Observación: los nodos se numeran empezando desde el 0.")
+                return False
+        if algoritmo == "Bellman-Kalaba":
+            #Sintaxis
+            try:
+                fn = int(self.lastnodebellman.get())
+            except ValueError:
+                messagebox.showerror("Entrada vacía o invalida","Configura adecuadamente el nodo final para el algoritmo de Bellman-Kalaba antes de continuar.")
+                return False
+            #Rango
+            if fn < 0 or fn > numNodos-1:
+                messagebox.showerror("Valor fuera de rango","El valor introducido para el nodo final no se corresponde con ningún nodo existente.")
+                return False
+        if algoritmo == "Solin":
+            if self.selmodosolin.get() == '':
+                messagebox.showerror("Entrada vacía o inválida","Configura adecuadamente el modo de operación del algoritmo de Solin antes de continuar.")
+                return False
+        return True
+
     def generateMatrix(self):
+        """
+        Función llamada al pulsar el botón preparar matriz
+        """
+        #Comprobación de errores general antes de continuar
+        if not self.checkErrors(): return
         self.dropMatrix()
         self.switchMatrixButtons('enabled')
         self.buttoncontinue.configure(text="Actualizar datos", command=self.updateMatrix)
@@ -157,8 +254,12 @@ class Aplicacion():
                 self.matriz[key] = textvar
         self.dibujarBotonera()
         self.solveroutput.insert(END, "Esperando orden para ejecutar resolución...\n")
+        self.operationStatus = 2
 
     def ajustarTitulo(self,caja,i):
+        """
+        Ajusta el título de la caja proporcionada. i es el número que se muestra en la misma
+        """
         if self.selalgoritmo.get() == "Dijkstra":
             if i == int(self.firstnodedijkstra.get()):
                 caja.insert(0,str(i)+'*O')
@@ -176,10 +277,14 @@ class Aplicacion():
             caja.insert(0,str(i))
 
     def updateMatrix(self):
+        """
+        Función llamada al pulsar el botón de actualizar datos
+        """
+        if not self.checkErrors(): return
         if self.selalgoritmo.get() == "Dijkstra":
             fn = self.firstnodedijkstra.get()
             ln = self.lastnodedijkstra.get()
-            #Limpiar celdas
+            #Limpiar
             self.dijkstraClearTitles()
             self.unbindTitles()
             #Asignar datos
@@ -193,6 +298,7 @@ class Aplicacion():
                 celda.configure(state="disabled")
         elif self.selalgoritmo.get() == "Bellman-Kalaba":
             ln = self.lastnodebellman.get()
+            #Limpiar
             self.dijkstraClearTitles()
             self.unbindTitles()
             for celda in [self.celdasTitulo['c'+ln],self.celdasTitulo['r'+ln]]:
@@ -205,27 +311,39 @@ class Aplicacion():
                 celda.bind("<Button-1>", lambda event, node=int(celda.get()), yo=self : ElementViewTransporte(self.principal, node,yo))
         self.switchMatrixButtons('enabled')
         self.solveroutput.insert(END, "Esperando orden para ejecutar resolución...\n")
+        self.operationStatus = 2
     
     def dijkstraClearTitles(self):
+        """
+        Limpia todos los títulos especiales de las cajas (los precedidos por *)
+        """
         for celda in self.celdasTitulo.values():
             celda.configure(state="enabled")
             index = celda.get().find('*')
             if index != -1: celda.delete(index,END)
             celda.configure(state="disabled")
-
+    
     def unbindTitles(self):
+        """
+        Desacopla los menus secundarios del modo de trasporte de las cajas y limpia la memoria de datos
+        """
         for celda in self.celdasTitulo.values():
             celda.unbind("<Button-1>")
         self.demandasProducciones = {}
 
     def dropMatrix(self):
+        """
+        Limpia la matriz entera
+        """
         for widget in self.panelmatrizmain.grid_slaves():
             widget.grid_forget()
         self.matriz = {}
         self.celdasTitulo = {}
 
     def simetrizeMatrix(self):
-
+        """
+        Simetriza la matriz de costes
+        """
         def parseToInt(string):
             if string == '': return 0
             else: return int(string)
@@ -258,10 +376,13 @@ class Aplicacion():
             self.botoneraDibujada = True
 
     def algorithmSelected(self,event):
+        """
+        Función llamada al elegir un algoritmo en el desplegable
+        """
         self.modosubpanelupdate()
         self.solveroutput.delete('1.0',END)
         #self.selalgoritmomatriz.configure(text="Algoritmo elegido: " + self.selalgoritmo.get())
-        if self.selalgoritmo.get() != 'Dijkstra': self.dijkstraClearTitles()
+        self.dijkstraClearTitles()
         if self.selalgoritmo.get() == 'Dijkstra':
             self.solveroutput.insert(END, "Algoritmo elegido: Dijkstra\nPermite encontrar el camino mínimo desde el nodo de origen hasta el nodo de destino.\n\n")
         elif self.selalgoritmo.get() == 'Bellman-Kalaba':
@@ -272,6 +393,7 @@ class Aplicacion():
             self.solveroutput.insert(END, "Algoritmo elegido: Solin\nPermite calcular el árbol recubridor mínimo o máximo de un grafo.\n")
             self.solveroutput.insert(END, "\nObservación: dado que trabajamos con un árbol, asigna los valores a la mitad de la matriz y simetrizala.\n\n")
         self.solveroutput.insert(END, "Actualiza la información del problema antes de continuar...\n")
+        self.operationStatus = 1
 
     def modosubpanelupdate(self):
         self.clearPanelModo()
@@ -306,7 +428,16 @@ class Aplicacion():
             widget.pack_forget()
 
     def solve(self):
+        """
+        Comprueba todos los datos antes de continuar y redirige el flujo del programa al algoritmo  de resolución adecuado
+        """
         self.buildGraph()
+        if self.operationStatus != 2:
+            messagebox.showwarning("Configuración sin finalizar", "Configura los datos del problema (si es necesario) y pulsa 'Actualizar datos' antes de continuar.")
+            return
+        if not self.checkConnectivity():
+            messagebox.showwarning("Conectividad del grafo", "El grafo introducido no parece ser conexo. Puedes utilizar un algoritmo sobre cada componente conexa o revisar la matriz de costes.")
+            return
         if self.selalgoritmo.get() == "Dijkstra":
             self.solveDijkstra()
         elif self.selalgoritmo.get() == "Bellman-Kalaba":
@@ -315,6 +446,23 @@ class Aplicacion():
             self.solveFloyd()
         elif self.selalgoritmo.get() == "Solin":
             self.solveSolin(self.selmodosolin.get())
+
+    def checkConnectivity(self):
+        """
+        Comprueba la conectividad del grafo del problema
+        """
+        numnodos = int(self.entrynumnodos.get())
+        matrix = self.grafo.buildMatrizAdyacencia()
+        #Simetrizar la matrix
+        matrix = matrix + matrix.T - np.diag(matrix.diagonal())
+        #Prop: el grafo es conexo <-> A + A^2 + ... + A^(n-1) tiene todos los coef. != 0
+        for i in range(numnodos):
+            if i == 0 or i==1: continue
+            matrix = matrix + np.linalg.matrix_power(matrix,i)
+        for elemento in np.nditer(matrix):
+            if elemento == 0:
+                return False
+        return True
 
     def lazosCallback(self):
         if self.loops.get() == 1:
@@ -335,9 +483,11 @@ class Aplicacion():
         self.switchConfiguration('enabled')
 
     def buildGraph(self):
-        #Encontrar nodos y aristas y construir el grafo del problema
+        """
+        Encontrar nodos y aristas y construir el grafo del problema
+        """
         tamaño = int(self.entrynumnodos.get())
-        nodos = set()
+        nodos = set(range(tamaño))
         aristas = set()
         costes = {}
         for i in range(tamaño):
@@ -346,11 +496,43 @@ class Aplicacion():
                 if coste == '' or int(coste) == 0:
                     continue
                 else:
-                    nodos.add(i)
-                    nodos.add(j)
                     aristas.add((i,j))
                     costes[(i,j)] = int(coste)
         self.grafo = Grafo(nodos,aristas,costes)
+
+    def outputText(self,text):
+        self.solveroutput.insert(END,text)
+
+    def getDemandasProducciones(self,nodo):
+        return self.demandasProducciones.get(nodo, (2,0))
+
+    def updateDemandasProducciones(self,nodo:int,value:tuple):
+        """
+        Actualiza los datos del modelo de transporte para el nodo 'nodo' con los datos 'value'
+        """
+        self.demandasProducciones[nodo] = value
+        #Ajustar titulo de la celda
+        for celda in [self.celdasTitulo['r'+str(nodo)], self.celdasTitulo['c'+str(nodo)]]:
+            celda.configure(state="enabled")
+            #Limpiar celda si no está vacia
+            indx = celda.get().find('*')
+            if indx != -1:
+                celda.delete(indx,END)
+            if value[0] == 2:
+                celda.configure(state="disabled")
+                continue
+            #Actualizar datos
+            if value[0] == 0:
+                celda.configure(state="enabled")
+                celda.insert(END,'*P')
+            elif value[0] == 1:
+                celda.configure(state="enabled")
+                celda.insert(END,'*D')
+            celda.configure(state="disabled")
+
+                                    ################################
+                                    ### ALGORITMOS DE RESOLUCIÓN ###
+                                    ################################
 
     def solveDijkstra(self):
         self.solveroutput.delete('1.0',END)
@@ -508,15 +690,6 @@ class Aplicacion():
 
         for i in range(numNodos):
             self.outputText("{}\n".format(str([matrizCostes[(i,j)] for j in range(numNodos)])))
-
-    def outputText(self,text):
-        self.solveroutput.insert(END,text)
-
-    def getDemandasProducciones(self,nodo):
-        return self.demandasProducciones.get(nodo, (2,0))
-
-    def updateDemandasProducciones(self,nodo,value):
-        self.demandasProducciones[nodo] = value
 
 class ElementViewTransporte():
     def __init__(self,master,nodo,masterSelf):
