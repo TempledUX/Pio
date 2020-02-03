@@ -1,5 +1,5 @@
 # Pio
-Graphical user interface for common algorithms in graph theory
+Interfaz gráfica de usuario para algoritmos típicos de la teoría de grafos.
 
 Implementación en Python de una interfaz gráfica utilizando la librería tkinter para el cómputo de algoritmos clásicos de la teoría de grafos.
 
@@ -9,9 +9,11 @@ Pio es capaz de utilizar los siguientes algoritmos:
 - Algoritmo de Floyd. Permite encontrar los caminos mínimos entre dos cualesquiera pares de nodos de un grafo.
 - Algoritmo de Solin. Permite encontrar el árbol recubridor máximo/mínimo de un grafo.
 
+Además puede trabajar con el problema de transporte (siguiendo el modelo de transporte + nodos intermedios) planteando las ecuaciones y resolviéndolo mediante programación lineal.
+
 Pio ofrece la resolución paso por paso de cada algoritmo además de la solución final.
 
 ### Cosas que faltan por implementar (en progreso)
-- Problemas de transporte y de asignación y un motor de programación lineal que los resuelva.
+- Problemas de asignación como caso particular del problema de transporte.
 - Opción de guardar la información del problema y el resultado en un archivo y después poder cargarlo desde el programa.
 - Localizalización en más idiomas (de momento solo disponible en español)
