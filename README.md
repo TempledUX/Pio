@@ -14,4 +14,4 @@ Pio ofrece la resolución paso por paso de cada algoritmo además de la solució
 ### Cosas que faltan por implementar (en progreso)
 - Problemas de asignación como caso particular del problema de transporte.
 - Opción de guardar la información del problema y el resultado en un archivo y después poder cargarlo desde el programa.
-- Localizalización en más idiomas (de momento solo disponible en español)
+- Localización en más idiomas (de momento solo disponible en español)
