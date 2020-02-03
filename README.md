@@ -1,7 +1,5 @@
 # Pio
-Interfaz gráfica de usuario para algoritmos típicos de la teoría de grafos.
-
-Implementación en Python de una interfaz gráfica utilizando la librería tkinter para el cómputo de algoritmos clásicos de la teoría de grafos.
+Pio es una implementación en Python de una interfaz gráfica utilizando la librería tkinter para el cómputo de algoritmos clásicos de la teoría de grafos.
 
 Pio es capaz de utilizar los siguientes algoritmos:
 - Algoritmo de Dijkstra. Permite encontrar la distancia mínima entre dos nodos de un grafo.
