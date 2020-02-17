@@ -12,6 +12,5 @@ Además puede trabajar con el problema de transporte (siguiendo el modelo de tra
 Pio ofrece la resolución paso por paso de cada algoritmo además de la solución final.
 
 ### Cosas que faltan por implementar (en progreso)
-- Problemas de asignación como caso particular del problema de transporte.
 - Opción de guardar la información del problema y el resultado en un archivo y después poder cargarlo desde el programa.
 - Localización en más idiomas (de momento solo disponible en español)
