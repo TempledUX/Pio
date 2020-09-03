@@ -2,9 +2,10 @@ from tkinter import *
 from tkinter import ttk,font,messagebox
 from math import inf
 import numpy as np
+import pulp
 
 # Pio - TempledUX
-# Last edit: 10/01/2020
+# Last edit: 25/01/2020
 # Contact: edux98g@gmail.com
 # Public license: MIT
 
@@ -392,6 +393,9 @@ class Aplicacion():
         elif self.selalgoritmo.get() == 'Solin':
             self.solveroutput.insert(END, "Algoritmo elegido: Solin\nPermite calcular el árbol recubridor mínimo o máximo de un grafo.\n")
             self.solveroutput.insert(END, "\nObservación: dado que trabajamos con un árbol, asigna los valores a la mitad de la matriz y simetrizala.\n\n")
+        elif self.selalgoritmo.get() == 'Transporte':
+            self.solveroutput.insert(END, "Algoritmo elegido: Transporte\nPermite resolver un problema formulado mediante el modelo de transporte (nodos de producción, intermedios y de destino).")
+            self.solveroutput.insert(END, "\nElige la cabecera de cada nodo para determinar como se comportará bajo el modelo de transporte y para ajustar sus valores de producción/demanda.\n")
         self.solveroutput.insert(END, "Actualiza la información del problema antes de continuar...\n")
         self.operationStatus = 1
 
@@ -446,6 +450,8 @@ class Aplicacion():
             self.solveFloyd()
         elif self.selalgoritmo.get() == "Solin":
             self.solveSolin(self.selmodosolin.get())
+        elif self.selalgoritmo.get() == "Transporte":
+            self.solveTransporte()
 
     def checkConnectivity(self):
         """
@@ -502,6 +508,12 @@ class Aplicacion():
 
     def outputText(self,text):
         self.solveroutput.insert(END,text)
+
+    def getMatrix(self,casilla):
+        r = self.matriz[casilla].get()
+        if r == 0 or r == '':
+            return 0
+        else: return int(r)
 
     def getDemandasProducciones(self,nodo):
         return self.demandasProducciones.get(nodo, (2,0))
@@ -690,6 +702,79 @@ class Aplicacion():
 
         for i in range(numNodos):
             self.outputText("{}\n".format(str([matrizCostes[(i,j)] for j in range(numNodos)])))
+
+    def solveTransporte(self):
+        #Motor de programación lineal - PuLP
+        #Recuperamos toda la información según el modelo de transporte
+        nodosProductores = []
+        nodosIntermedios = []
+        nodosConsumidores = []
+        numNodos = int(self.entrynumnodos.get())
+        #Clasificamos todos los nodos
+        for nodo in range(numNodos):
+            nodoinfo = self.getDemandasProducciones(nodo)
+            if nodoinfo[0] == 0:
+                nodosProductores.append((nodo,nodoinfo[1]))
+                continue
+            elif nodoinfo[0] == 1:
+                nodosConsumidores.append((nodo,nodoinfo[1]))
+                continue
+            else:
+                nodosIntermedios.append(nodo)
+        problema = pulp.LpProblem("Transporte",pulp.LpMinimize)
+        variables = {}
+        #Modo con nodos intermedios
+        if len(nodosIntermedios) > 0:
+            #Asignación de variables
+            for nodo in nodosProductores:
+                for nodoi in nodosIntermedios:
+                    var = pulp.LpVariable("x{}{}".format(nodo[0],nodoi),upBound=nodo[1],lowBound=0)
+                    variables[nodo[0],nodoi] = var
+            for nodoi in nodosIntermedios:
+                for nodo in nodosConsumidores:
+                    var = pulp.LpVariable("x{}{}".format(nodoi,nodo[0]),upBound=nodo[1],lowBound=0)
+                    variables[nodoi,nodo[0]] = var
+            #Configuración de ecuaciones de equilibrio
+            for nodo in nodosIntermedios:
+                entradas = [variables[i,nodo] for i in [nod[0] for nod in nodosProductores]]
+                salidas = [variables[nodo,i] for i in [nod[0] for nod in nodosConsumidores]]
+                problema += pulp.lpSum(entradas) == pulp.lpSum(salidas)
+            #Configuración de ecuaciones de productores
+            for nodo in nodosProductores:
+                nodovars = [variables[nodo[0],i] for i in nodosIntermedios]
+                problema += pulp.lpSum(nodovars) <= nodo[1]
+            #Configuración de ecuaciones de consumidores
+            for nodo in nodosConsumidores:
+                nodovars = [variables[i,nodo[0]] for i in nodosIntermedios]
+                problema += pulp.lpSum(nodovars) >= nodo[1]
+        else:
+            #Optimización mediante expresión directa: (REVISAR)
+            #variables = {(nod1[0],nod2[0]) : pulp.LpVariable("x{}{}".format(nod1[0],nod2[0]),upBound=nod1[0],lowBound=0) for nod1 in nodosConsumidores for nod2 in nodosProductores}
+            for nod1 in nodosProductores:
+                for nod2 in nodosConsumidores:
+                    var = pulp.LpVariable("x{}{}".format(nod1[0],nod2[0]),upBound=nod1[1],lowBound=0)
+                    variables[nod1[0],nod2[0]] = var
+            #Configuración de ecuaciones de productores
+            for nodo in nodosProductores:
+                nodovars = [variables[nodo[0],i] for i in [nod[0] for nod in nodosConsumidores]]
+                problema += pulp.lpSum(nodovars) <= nodo[1]
+            #Configuración de ecuaciones de consumidores
+            for nodo in nodosConsumidores:
+                nodovars = [variables[i,nodo[0]] for i in [nod[0] for nod in nodosProductores]]
+                problema += pulp.lpSum(nodovars) >= nodo[1]
+        #Ecuacion general
+        conf = [(variables[i,j],self.getMatrix((i,j))) for i in range(numNodos) for j in range(numNodos) if variables.get((i,j),0) != 0]
+        exp = pulp.LpAffineExpression(conf)
+        problema += exp
+        #Resultado del problema
+        self.solveroutput.insert(END, "\nInformación del problema\n" + 35*'-' + '\n')
+        self.solveroutput.insert(END, repr(problema) + "\n")
+        problema.solve()
+        self.solveroutput.insert(END, "Estado del problema: {}".format(pulp.LpStatus[problema.status]))
+        self.solveroutput.insert(END, "\nValor de la función objetivo: {}".format(pulp.value(problema.objective)))
+        self.solveroutput.insert(END, "\nVariables:\n")
+        for v in problema.variables():
+            self.solveroutput.insert(END, str(v.name) + '=' + str(v.varValue) + '\n')
 
 class ElementViewTransporte():
     def __init__(self,master,nodo,masterSelf):
