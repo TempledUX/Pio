@@ -1,6 +1,7 @@
 Libraries:
 1) tkinter - GUI
 2) NumPy - Soporte para matrices
+3) pulp - Programación lineal
 
 Changelog:
 20/01/2020
