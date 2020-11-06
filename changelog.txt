@@ -1,9 +1,11 @@
 Libraries:
 1) tkinter - GUI
-2) NumPy - Soporte para matrices
-3) pulp - Programación lineal
+2) NumPy - Matrix support
+3) pulp - Linear programming
 
 Changelog:
+07/11/2020
+- Localization for english
 20/01/2020
 - Documentación
 - operationStatus var. Control de flujo del programa
