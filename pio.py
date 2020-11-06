@@ -6,7 +6,7 @@ import numpy as np
 import pulp
 
 # Pio - TempledUX
-# Last edit: 25/01/2020
+# Last edit: 07/11/2020
 # Contact: edux98g@gmail.com
 # Public license: MIT
 
