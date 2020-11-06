@@ -12,4 +12,5 @@ Besides the use of these algorithms, Pio can solve the transportation problem (f
 Pio offers a step by step resolution of each algorithm in addition to the final solution. This GUI is aimmed for helping students learn and understand the classic algorithms for graph theory and its use.
 
 Languages supported: English, Spanish.
+
 Dependencies (python modules): numpy (https://numpy.org/), PuLP (https://pypi.org/project/PuLP/)
