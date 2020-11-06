@@ -1,6 +1,7 @@
 from tkinter import *
 from tkinter import ttk,font,messagebox
 from math import inf
+from os import path
 import numpy as np
 import pulp
 
@@ -46,12 +47,211 @@ class Grafo():
             matriz[nodo] = nodolista
         return matriz
 
+            ################
+            # LOCALIZATION #
+            ################
+
+def getLocalization(language):
+    if language == "spanish":
+        return {
+            "language_spanish": "Español",
+            "language_english": "Inglés",
+            "language_menu": "Lenguaje",
+            "title": "Pio - Teoría de grafos",
+            "labelframe1_title": "Configuración del problema",
+            "labelframe1_nodenumber_label": "Número de nodos:",
+            "labelframe1_algorithm_label": "Algoritmo de operación:",
+            "labelframe1_opmode_label": "Modo de operación:",
+            "labelframe1_button_setupmatrix": "Preparar matriz",
+            "labelframe1_button_updatedata": "Actualizar datos",
+            "dijkstrasubframe_origin_node": "Nodo de origen:",
+            "dijkstrasubframe_destination_node": "Nodo de destino:",
+            "bellmankalabasubframe_last_node": "Nodo final:",
+            "labelframe2_title": "Matriz de costes del grafo",
+            "labelframe2_solve_button": "Resolver",
+            "labelframe2_symmetrize_button": "Simetrizar",
+            "labelframe2_drop_matrix_button": "Reconfigurar matriz",
+            "labelframe2_clear_ties_checkbox": "Sin lazos",
+            "labelframe3_title": "Resolución del problema e información de estado",
+            "labelframe3_msg_waiting_data": "Esperando datos del problema...",
+            "labelframe3_msg_waiting_solve": "OK \nEsperando orden para ejecutar resolución...\n",
+            "labelframe3_msg_waiting_problem": "Actualiza la información del problema antes de continuar...",
+            "error_invalidentry_title": "Entrada vacía o inválida",
+            "error_invalidentry_desc": "Especifica un número de nodos correcto antes de continuar.",
+            "error_outofrange_title": "Valor fuera de rango",
+            "error_outofrange_desc": "El número de nodos es demasiado grande. El máximo de nodos disponible es 25",
+            "error_invalidentryalg_title": "Entrada vacía o inválida",
+            "error_invalidentryalg_desc": "Especifica un algoritmo de resolución antes de continuar.",
+            "error_invalidentrystartendnodes_title": "Entrada vacía o inválida",
+            "error_invalidentrystartendnodes_desc": "Configura adecuadamente el nodo inicial y final para el algoritmo de Dijkstra y después actualiza los datos.",
+            "error_outofrangestartnode_title": "Valor fuera de rango",
+            "error_outofrangestartnode_desc": "El valor introducido para el nodo inicial no se corresponde con ningún nodo existente. Observación: los nodos se numeran empezando desde el 0.",
+            "error_outofrangeendnode_title": "Valor fuera de rango",
+            "error_outofrangeendnode_desc": "El valor introducido para el nodo final no se corresponde con ningún nodo existente. Observación: los nodos se numeran empezando desde el 0.",
+            "error_invalidentrybellmanend_title": "Entrada vacía o inválida",
+            "error_invalidentrybellmanend_desc": "Configura adecuadamente el nodo final para el algoritmo de Bellman-Kalaba antes de continuar.",
+            "error_outofrangebellmanend_title": "Valor fuera de rango",
+            "error_outofrangebellmanend_desc": "El valor introducido para el nodo final no se corresponde con ningún nodo existente.",
+            "error_invalidentrysolin_title": "Entrada vacía o inválida",
+            "error_invalidentrysolin_desc": "Configura adecuadamente el modo de operación del algoritmo de Solin antes de continuar.",
+            "error_solve_noconfig_title": "Configuración sin finalizar",
+            "error_solve_noconfig_desc": "Configura los datos del problema (si es necesario) y pulsa 'Actualizar datos' antes de continuar.",
+            "error_solve_connectivity_title": "Conectividad del grafo",
+            "error_solve_connectivity_desc": "El grafo introducido no parece ser conexo. Puedes utilizar un algoritmo sobre cada componente conexa o revisar la matriz de costes.",
+            "alg_dijkstra_desc": "Algoritmo elegido: Dijkstra\nPermite encontrar el camino mínimo desde el nodo de origen hasta el nodo de destino.\n\n",
+            "alg_bellmankalaba_desc": "Algoritmo elegido: Bellman-Kalaba\nPermite encontrar todos los caminos mínimos del grafo hasta un nodo final.\n\n",
+            "alg_floyd_desc": "Algoritmo elegido: Floyd\nPermite calcular los caminos mínimos entre dos pares cualesquiera de nodos.\n\n",
+            "alg_solin_desc": "Algoritmo elegido: Solin\nPermite calcular el árbol recubridor mínimo o máximo de un grafo.\n",
+            "alg_solin_desc2": "\nObservación: dado que trabajamos con un árbol, asigna los valores a la mitad de la matriz y simetrizala.\n\n",
+            "alg_transportation_desc": "Algoritmo elegido: Transporte\nPermite resolver un problema formulado mediante el modelo de transporte (nodos de producción, intermedios y de destino).",
+            "alg_transportation_desc2": "\nElige la cabecera de cada nodo para determinar como se comportará bajo el modelo de transporte y para ajustar sus valores de producción/demanda.\n",
+            "dijkstra_pipeline_title": "Resolución del problema mediante el algoritmo de Dijkstra: \n \n",
+            "dijkstra_pipeline_1": "Nodo óptimo: {} \nM=[{}] \n",
+            "dijkstra_pipeline_2": "Nodo óptimo: {} \nM={} \n",
+            "dijkstra_pipeline_3": "\nEl algoritmo ha finalizado. La distancia mínima del nodo origen al nodo destino es {}. \n",
+            "bellman_pipeline_title": "Resolución del problema mediante el algoritmo de Bellman-Kalaba: \n \n",
+            "bellman_pipeline_1": "\nEl algoritmo ha finalizado. Las distancias mínimas de cada uno de los nodos al nodo final son los valores de V de la última iteracción. \n",
+            "floyd_pipeline_title": "Resolución del problema mediante el algoritmo de Floyd: \n \n",
+            "floyd_pipeline_1": "Matriz costes: \n",
+            "floyd_pipeline_2": "Matriz penúltimos nodos: \n",
+            "floyd_pipeline_3": "\nFinal:\n",
+            "floyd_pipeline_4": "\nEl algoritmo ha finalizado. La matriz de costes del final contiene los caminos mínimos para ir de un nodo a otro y la matriz de penúltimos nodos del final contiene los penúltimos nodos de los caminos mínimos que unen dos nodos. \n",
+            "solin_pipeline_title": "Resolución del problema mediante el algoritmo de Solin: \n \n",
+            "solin_pipeline_1": "\nEl algoritmo ha finalizado. La matriz que se presenta a continuación es la que queda tras aplicar el algoritmo de Solin: \n",
+            "transportation_pipeline_title": "\nInformación del problema\n",
+            "transportation_pipeline_1": "Estado del problema: {}",
+            "transportation_pipeline_2": "\nValor de la función objetivo: {}",
+            "transportation_pipeline_3": "\nVariables:\n",
+            "gui2_title": "Ajustar nodo {}",
+            "gui2_radio1": "Origen",
+            "gui2_label1": "Producción:",
+            "gui2_radio2": "Destino",
+            "gui2_label2": "Demanda:",
+            "gui2_radio3": "Nodo intermedio",
+            "gui2_save_button": "Guardar"
+        }
+    elif language == "english":
+        return {
+            "language_spanish": "Spanish",
+            "language_english": "English",
+            "language_menu": "Language",
+            "title": "Pio - Graph theory solver",
+            "labelframe1_title": "Problem configuration",
+            "labelframe1_nodenumber_label": "Number of nodes:",
+            "labelframe1_algorithm_label": "Algorithm:",
+            "labelframe1_opmode_label": "Operation mode:",
+            "labelframe1_button_setupmatrix": "Setup matrix",
+            "labelframe1_button_updatedata": "Update problem data",
+            "dijkstrasubframe_origin_node": "Origin node:",
+            "dijkstrasubframe_destination_node": "Destination node:",
+            "bellmankalabasubframe_last_node": "End node:",
+            "labelframe2_title": "Cost matrix of the graph",
+            "labelframe2_solve_button": "Solve",
+            "labelframe2_symmetrize_button": "Symmetrize",
+            "labelframe2_drop_matrix_button": "Rebuild matrix",
+            "labelframe2_clear_ties_checkbox": "Clear ties",
+            "labelframe3_title": "Problem solving information and log",
+            "labelframe3_msg_waiting_data": "Waiting for problem data...",
+            "labelframe3_msg_waiting_solve": "OK \nWaiting for request to solve problem...\n",
+            "labelframe3_msg_waiting_problem": "Update the problem before continuing...",
+            "error_invalidentry_title": "Empty or invalid entry",
+            "error_invalidentry_desc": "Input a correct number of nodes before continuing.",
+            "error_outofrange_title": "Out of range value",
+            "error_outofrange_desc": "The number of nodes is too large. You can input a number of 25 nodes max.",
+            "error_invalidentryalg_title": "Empty or invalid entry",
+            "error_invalidentryalg_desc": "Input a solving algorithm before continuing",
+            "error_invalidentrystartendnodes_title": "Empty or invalid entry",
+            "error_invalidentrystartendnodes_desc": "Setup properly the origin and destination node for the Dijkstra algorithm and then update the problem data.",
+            "error_outofrangestartnode_title": "Out of range value",
+            "error_outofrangestartnode_desc": "The value entered for the origin node doesn't correspond to any existing node. Tip: nodes are numbered starting from 0.",
+            "error_outofrangeendnode_title": "Out of range value",
+            "error_outofrangeendnode_desc": "The value entered for the destination node doesn't correspond to any existing node. Tip: nodes are numbered starting from 0.",
+            "error_invalidentrybellmanend_title": "Empty or invalid entry",
+            "error_invalidentrybellmanend_desc": "Setup properly the destination node for the Bellman-Kalaba algorithm before continuing.",
+            "error_outofrangebellmanend_title": "Out of range value",
+            "error_outofrangebellmanend_desc": "The value entered for the destination node doesn't correspond to any existing node.",
+            "error_invalidentrysolin_title": "Empty or invalid entry",
+            "error_invalidentrysolin_desc": "Setup properly the Solin algorithm's operation mode before continuing",
+            "error_solve_noconfig_title": "Empty configuration",
+            "error_solve_noconfig_desc": "Setup the problem data (if necessary) and click 'Update problem data' before continuing.",
+            "error_solve_connectivity_title": "Graph connectivity",
+            "error_solve_connectivity_desc": "The entered graph doesn't seem to be connected. You can use one algorithm for every connected component or check the cost matrix.",
+            "alg_dijkstra_desc": "Selected algorithm: Dijkstra\nFinds the shortest path from the origin node to the destination node.\n\n",
+            "alg_bellmankalaba_desc": "Selected algorithm: Bellman-Kalaba\nFinds the shortest paths from every node of the graph to a destination node.\n\n",
+            "alg_floyd_desc": "Selected algorithm: Floyd\nFinds the shortest paths between every pair of nodes of the graph.\n\n",
+            "alg_solin_desc": "Selected algorithm: Solin\nFinds the minimum or maximum spanning tree of a graph.\n",
+            "alg_solin_desc2": "\nTip: since we work with a tree, input values for half of the matrix and symmetrize it.\n\n",
+            "alg_transportation_desc": "Selected algorithm: Transportation\nSolves a problem formulated under the transportation model (production nodes, intermediate nodes and destination nodes).",
+            "alg_transportation_desc2": "\nSelect the header of a node for setting how it will behave under the transportation model and for setting up its production/demand values.\n",
+            "dijkstra_pipeline_title": "Resolution of the problem using Dijkstra's algorithm: \n \n",
+            "dijkstra_pipeline_1": "Optimal node: {} \nM=[{}] \n",
+            "dijkstra_pipeline_2": "Optimal node: {} \nM={} \n",
+            "dijkstra_pipeline_3": "\nAlgorithm has finished. The minimum distance from origin node to destination node is {}. \n",
+            "bellman_pipeline_title": "Resolution of the problem using Bellman-Kalaba's algorithm: \n \n",
+            "bellman_pipeline_1": "\nAlgorithm has finished. The minimum distances from each node to the destination node are the values V of the last iteration. \n",
+            "floyd_pipeline_title": "Resolution of the problem using Floyd's algorithm: \n \n",
+            "floyd_pipeline_1": "Cost matrix: \n",
+            "floyd_pipeline_2": "Penultimate nodes matrix: \n",
+            "floyd_pipeline_3": "\nEnd:\n",
+            "floyd_pipeline_4": "\nAlgorithm has finished. The last cost matrix contains the shortest paths between every pair of nodes and the last penultimate nodes matrix contains the penultimate nodes of the shortest paths between two nodes. \n",
+            "solin_pipeline_title": "Resolution of the problem using Solin's algorithm: \n \n",
+            "solin_pipeline_1": "\nAlgorithm has finished. The next matrix is the one that remains after applying Solin's algorithm: \n",
+            "transportation_pipeline_title": "\nProblem info\n",
+            "transportation_pipeline_1": "Problem status: {}",
+            "transportation_pipeline_2": "\nValue of the target function: {}",
+            "transportation_pipeline_3": "\nVariables:\n",
+            "gui2_title": "Node {} conf.",
+            "gui2_radio1": "Origin",
+            "gui2_label1": "Production:",
+            "gui2_radio2": "Destination",
+            "gui2_label2": "Demand:",
+            "gui2_radio3": "Intermediate node",
+            "gui2_save_button": "Save"
+        }
+
+def initLocalization() -> str:
+    try:
+        if not (path.exists('pio_settings.txt')):
+            infile = open('pio_settings.txt','w')
+            infile.write('localization=english')
+            infile.close()
+            raise Exception
+        infile = open('pio_settings.txt','r')
+        data = infile.read()
+        idx = data.find('=')
+        locsetting = data[idx+1:]
+    except Exception:
+        return 'english'
+    return locsetting
+
+def saveLocalization(locsetting: str, app):
+    try:
+        outfile = open('pio_settings.txt','w')
+        outfile.write(f"localization={locsetting}")
+        outfile.close()
+    except Exception:
+        return 'error'
+    app.destroy()
+    Aplicacion()
+
+                #######
+                # GUI #
+                #######
 
 class Aplicacion():
     def __init__(self):
+        self.loc = getLocalization(initLocalization())
+
         self.principal = Tk()
-        self.principal.title("Pio - Teoría de grafos")
+        self.principal.title(self.loc['title'])
         self.principal.geometry("900x800")
+
+        menubar = Menu(self.principal)
+        languagemenu = Menu(menubar, tearoff=0)
+        languagemenu.add_command(label=self.loc['language_spanish'], command=lambda s="spanish", app=self.principal:saveLocalization(s,app))
+        languagemenu.add_command(label=self.loc['language_english'], command=lambda s="english", app=self.principal:saveLocalization(s,app))
+        menubar.add_cascade(label=self.loc['language_menu'], menu=languagemenu)
+        self.principal.config(menu=menubar)
 
         self.botoneraDibujada = False
 
@@ -80,53 +280,54 @@ class Aplicacion():
         self.operationStatus = 0
 
         #Panel de información y subpaneles
-        self.panelmodo = ttk.LabelFrame(self.principal, text="Configuración del problema")
+        self.panelmodo = ttk.LabelFrame(self.principal, text=self.loc['labelframe1_title'])
         self.panelinfo = ttk.Frame(self.panelmodo)
         self.panelinfosolin = ttk.Frame(self.panelmodo)
         self.panelbotones = ttk.Frame(self.panelmodo)
-        self.textnumnodos = ttk.Label(self.panelinfo, text="Número de nodos:")
+        self.textnumnodos = ttk.Label(self.panelinfo, text=self.loc['labelframe1_nodenumber_label'])
         self.entrynumnodos = ttk.Entry(self.panelinfo, width=7)
-        self.textalgoritmo = ttk.Label(self.panelinfo, text="Algoritmo de operación:")
-        self.textmodesolin = ttk.Label(self.panelinfosolin,text="Modo de operación:")
+        self.textalgoritmo = ttk.Label(self.panelinfo, text=self.loc['labelframe1_algorithm_label'])
+        self.textmodesolin = ttk.Label(self.panelinfosolin,text=self.loc['labelframe1_opmode_label'])
         self.selalgoritmo = ttk.Combobox(self.panelinfo, state="readonly")
-        self.selalgoritmo["values"] = ["Dijkstra","Bellman-Kalaba","Floyd","Solin","Transporte","Asignación"]
+        # Asignación deleted (06/11/20), framework required
+        self.selalgoritmo["values"] = ["Dijkstra","Bellman-Kalaba","Floyd","Solin","Transporte"]
         self.selalgoritmo.bind("<<ComboboxSelected>>",self.algorithmSelected)
         self.selmodosolin = ttk.Combobox(self.panelinfosolin, state="readonly")
         self.selmodosolin["values"] = ["Maximizar","Minimizar"]
-        self.buttoncontinue = ttk.Button(self.panelbotones, text="Preparar matriz", command=self.generateMatrix)
+        self.buttoncontinue = ttk.Button(self.panelbotones, text=self.loc['labelframe1_button_setupmatrix'], command=self.generateMatrix)
 
         #Subpanel Dijkstra
         self.panelinfodijkstra = ttk.Frame(self.panelmodo)
-        self.textfirstnodedijkstra = ttk.Label(self.panelinfodijkstra,text="Nodo de origen:")
-        self.textlastnodedijkstra = ttk.Label(self.panelinfodijkstra, text="Nodo de destino:")
+        self.textfirstnodedijkstra = ttk.Label(self.panelinfodijkstra,text=self.loc['dijkstrasubframe_origin_node'])
+        self.textlastnodedijkstra = ttk.Label(self.panelinfodijkstra, text=self.loc['dijkstrasubframe_destination_node'])
         self.firstnodedijkstra = ttk.Entry(self.panelinfodijkstra,width=5)
         self.lastnodedijkstra = ttk.Entry(self.panelinfodijkstra,width=5)
 
         #Subpanel Bellman-Kalaba
         self.panelinfokalaba = ttk.Frame(self.panelmodo)
-        self.textlastnodebellman = ttk.Label(self.panelinfokalaba, text="Nodo final:")
+        self.textlastnodebellman = ttk.Label(self.panelinfokalaba, text=self.loc['bellmankalabasubframe_last_node'])
         self.lastnodebellman = ttk.Entry(self.panelinfokalaba,width=5)
 
         self.panelintermedio = ttk.Frame(self.principal)
 
         #Panel de matriz y subpaneles
-        self.panelmatriz = ttk.LabelFrame(self.panelintermedio, text="Matriz de costes del grafo")
+        self.panelmatriz = ttk.LabelFrame(self.panelintermedio, text=self.loc['labelframe2_title'])
         self.panelmatrizmain = ttk.Frame(self.panelmatriz)
         self.panelmatrizbotonera = ttk.Frame(self.panelmatriz)
 
         #self.selalgoritmomatriz = ttk.Label(self.panelmatrizbotonera, font=font.Font(size=10))
-        self.buttonresolver = ttk.Button(self.panelmatrizbotonera,text="Resolver",command=self.solve)
-        self.buttonsim = ttk.Button(self.panelmatrizbotonera,text="Simetrizar",command=self.simetrizeMatrix)
+        self.buttonresolver = ttk.Button(self.panelmatrizbotonera,text=self.loc['labelframe2_solve_button'],command=self.solve)
+        self.buttonsim = ttk.Button(self.panelmatrizbotonera,text=self.loc['labelframe2_symmetrize_button'],command=self.simetrizeMatrix)
         self.loops = IntVar(self.principal)
-        self.noloopscheck = ttk.Checkbutton(self.panelmatrizbotonera, text="Sin lazos", variable=self.loops, command=self.lazosCallback)
-        self.reconfiguratebutton = ttk.Button(self.panelmatrizbotonera, text="Reconfigurar matriz", command=self.reconfigurate)
+        self.noloopscheck = ttk.Checkbutton(self.panelmatrizbotonera, text=self.loc['labelframe2_clear_ties_checkbox'], variable=self.loops, command=self.lazosCallback)
+        self.reconfiguratebutton = ttk.Button(self.panelmatrizbotonera, text=self.loc['labelframe2_drop_matrix_button'], command=self.reconfigurate)
 
         #Panel de resolución y subpaneles
-        self.panelresolucion = ttk.LabelFrame(self.panelintermedio, text="Resolución del problema e información de estado")
+        self.panelresolucion = ttk.LabelFrame(self.panelintermedio, text=self.loc['labelframe3_title'])
         self.solveroutput = Text(self.panelresolucion, width=71)
         self.outputscroll = ttk.Scrollbar(self.panelresolucion, command=self.solveroutput.yview)
         self.solveroutput.configure(yscrollcommand=self.outputscroll.set)
-        self.solveroutput.insert(END,'Esperando datos del problema...')
+        self.solveroutput.insert(END,self.loc['labelframe3_msg_waiting_data'])
 
         #==GEOMETRIA==
         #Geometría de paneles
@@ -168,15 +369,15 @@ class Aplicacion():
         try:
             numNodos = int(self.entrynumnodos.get())
         except ValueError:
-            messagebox.showerror("Entrada vacía o inválida", "Especifica un número de nodos correcto antes de continuar.")
+            messagebox.showerror(self.loc['error_invalidentry_title'], self.loc['error_invalidentry_desc'])
             return False
         algoritmo = self.selalgoritmo.get()
         if numNodos > 25:
-            messagebox.showerror("Valor fuera de rango", "El número de nodos es demasiado grande. El máximo de nodos disponible es 25")
+            messagebox.showerror(self.loc['error_outofrange_title'], self.loc['error_outofrange_desc'])
             return False
         #Algoritmo elegido
         if algoritmo == '':
-            messagebox.showerror("Entrada vacía o invalida","Especifica un algoritmo de resolución antes de continuar.")
+            messagebox.showerror(self.loc['error_invalidentryalg_title'],self.loc['error_invalidentryalg_desc'])
             return False
         if algoritmo == "Dijkstra":
             #Sintaxis
@@ -184,32 +385,32 @@ class Aplicacion():
                 fn = int(self.firstnodedijkstra.get())
                 ln = int(self.lastnodedijkstra.get())
             except ValueError:
-                messagebox.showerror("Entrada vacía o inválida","Configura adecuadamente el nodo inicial y final para el algoritmo de Dijkstra y después actualiza los datos.")
+                messagebox.showerror(self.loc['error_invalidentrystartendnodes_title'],self.loc['error_invalidentrystartendnodes_desc'])
                 return False
             #Rango
             fn = int(self.firstnodedijkstra.get())
             ln = int(self.lastnodedijkstra.get())
             limite = numNodos
             if fn < 0 or fn > limite-1:
-                messagebox.showerror("Valor fuera de rango", "El valor introducido para el nodo inicial no se corresponde con ningún nodo existente. Observación: los nodos se numeran empezando desde el 0.")
+                messagebox.showerror(self.loc['error_outofrangestartnode_title'], self.loc['error_outofrangestartnode_desc'])
                 return False
             if ln < 0 or ln > limite-1:
-                messagebox.showerror("Valor fuera de rango", "El valor introducido para el nodo final no se corresponde con ningún nodo existente. Observación: los nodos se numeran empezando desde el 0.")
+                messagebox.showerror(self.loc['error_outofrangeendnode_title'], self.loc['error_outofrangeendnode_desc'])
                 return False
         if algoritmo == "Bellman-Kalaba":
             #Sintaxis
             try:
                 fn = int(self.lastnodebellman.get())
             except ValueError:
-                messagebox.showerror("Entrada vacía o invalida","Configura adecuadamente el nodo final para el algoritmo de Bellman-Kalaba antes de continuar.")
+                messagebox.showerror(self.loc['error_invalidentrybellmanend_title'],self.loc['error_invalidentrybellmanend_desc'])
                 return False
             #Rango
             if fn < 0 or fn > numNodos-1:
-                messagebox.showerror("Valor fuera de rango","El valor introducido para el nodo final no se corresponde con ningún nodo existente.")
+                messagebox.showerror(self.loc['error_outofrangebellmanend_title'],self.loc['error_outofrangebellmanend_desc'])
                 return False
         if algoritmo == "Solin":
             if self.selmodosolin.get() == '':
-                messagebox.showerror("Entrada vacía o inválida","Configura adecuadamente el modo de operación del algoritmo de Solin antes de continuar.")
+                messagebox.showerror(self.loc['error_invalidentrysolin_title'],self.loc['error_invalidentrysolin_desc'])
                 return False
         return True
 
@@ -221,7 +422,7 @@ class Aplicacion():
         if not self.checkErrors(): return
         self.dropMatrix()
         self.switchMatrixButtons('enabled')
-        self.buttoncontinue.configure(text="Actualizar datos", command=self.updateMatrix)
+        self.buttoncontinue.configure(text=self.loc['labelframe1_button_updatedata'], command=self.updateMatrix)
         #self.selalgoritmomatriz.configure(text="Algoritmo elegido: " + self.selalgoritmo.get())
         self.loops.set(0)
         self.switchConfiguration('disabled')
@@ -233,7 +434,7 @@ class Aplicacion():
             caja.configure(state="disabled")
             self.celdasTitulo['c'+str(i)] = caja
             if self.selalgoritmo.get() == 'Transporte':
-                caja.bind("<Button-1>", lambda event, node=i, yo=self : ElementViewTransporte(self.principal, node,yo))
+                caja.bind("<Button-1>", lambda event, node=i, yo=self : ElementViewTransporte(self.principal, node,yo,self.loc))
             caja.grid(column=i+1,row=0,padx=3,pady=3,sticky=(N,S,E,W))
         for i in range(numNodos):
             caja = ttk.Entry(self.panelmatrizmain,width=5)
@@ -241,7 +442,7 @@ class Aplicacion():
             caja.configure(state="disabled")
             self.celdasTitulo['r'+str(i)] = caja
             if self.selalgoritmo.get() == 'Transporte':
-                caja.bind("<Button-1>", lambda event, node=i, yo=self : ElementViewTransporte(self.principal, node,yo))
+                caja.bind("<Button-1>", lambda event, node=i, yo=self : ElementViewTransporte(self.principal, node,yo,self.loc))
             caja.grid(column=0,row=i+1,padx=3,pady=3,sticky=(N,S,E,W))
         #Matriz de datos
         for row in range(numNodos):
@@ -254,7 +455,9 @@ class Aplicacion():
                 key = (row,col)
                 self.matriz[key] = textvar
         self.dibujarBotonera()
-        self.solveroutput.insert(END, "Esperando orden para ejecutar resolución...\n")
+        self.solveroutput.delete('1.0',END)
+        self.writeprobleminfo()
+        self.solveroutput.insert(END, self.loc['labelframe3_msg_waiting_solve'])
         self.operationStatus = 2
 
     def ajustarTitulo(self,caja,i):
@@ -309,9 +512,11 @@ class Aplicacion():
         elif self.selalgoritmo.get() == 'Transporte':
             self.dijkstraClearTitles()
             for celda in self.celdasTitulo.values():
-                celda.bind("<Button-1>", lambda event, node=int(celda.get()), yo=self : ElementViewTransporte(self.principal, node,yo))
+                celda.bind("<Button-1>", lambda event, node=int(celda.get()), yo=self : ElementViewTransporte(self.principal, node,yo,self.loc))
         self.switchMatrixButtons('enabled')
-        self.solveroutput.insert(END, "Esperando orden para ejecutar resolución...\n")
+        self.solveroutput.delete('1.0',END)
+        self.writeprobleminfo()
+        self.solveroutput.insert(END, self.loc['labelframe3_msg_waiting_solve'])
         self.operationStatus = 2
     
     def dijkstraClearTitles(self):
@@ -384,20 +589,23 @@ class Aplicacion():
         self.solveroutput.delete('1.0',END)
         #self.selalgoritmomatriz.configure(text="Algoritmo elegido: " + self.selalgoritmo.get())
         self.dijkstraClearTitles()
-        if self.selalgoritmo.get() == 'Dijkstra':
-            self.solveroutput.insert(END, "Algoritmo elegido: Dijkstra\nPermite encontrar el camino mínimo desde el nodo de origen hasta el nodo de destino.\n\n")
-        elif self.selalgoritmo.get() == 'Bellman-Kalaba':
-            self.solveroutput.insert(END, "Algoritmo elegido: Bellman-Kalaba\nPermite encontrar todos los caminos mínimos del grafo hasta un nodo final.\n\n")
-        elif self.selalgoritmo.get() == 'Floyd':
-            self.solveroutput.insert(END, "Algoritmo elegido: Floyd\nPermite calcular los caminos mínimos entre dos pares cualesquiera de nodos.\n\n")
-        elif self.selalgoritmo.get() == 'Solin':
-            self.solveroutput.insert(END, "Algoritmo elegido: Solin\nPermite calcular el árbol recubridor mínimo o máximo de un grafo.\n")
-            self.solveroutput.insert(END, "\nObservación: dado que trabajamos con un árbol, asigna los valores a la mitad de la matriz y simetrizala.\n\n")
-        elif self.selalgoritmo.get() == 'Transporte':
-            self.solveroutput.insert(END, "Algoritmo elegido: Transporte\nPermite resolver un problema formulado mediante el modelo de transporte (nodos de producción, intermedios y de destino).")
-            self.solveroutput.insert(END, "\nElige la cabecera de cada nodo para determinar como se comportará bajo el modelo de transporte y para ajustar sus valores de producción/demanda.\n")
-        self.solveroutput.insert(END, "Actualiza la información del problema antes de continuar...\n")
+        self.writeprobleminfo()
         self.operationStatus = 1
+
+    def writeprobleminfo(self):
+        if self.selalgoritmo.get() == 'Dijkstra':
+            self.solveroutput.insert(END, self.loc['alg_dijkstra_desc'])
+        elif self.selalgoritmo.get() == 'Bellman-Kalaba':
+            self.solveroutput.insert(END, self.loc['alg_bellmankalaba_desc'])
+        elif self.selalgoritmo.get() == 'Floyd':
+            self.solveroutput.insert(END, self.loc['alg_floyd_desc'])
+        elif self.selalgoritmo.get() == 'Solin':
+            self.solveroutput.insert(END, self.loc['alg_solin_desc'])
+            self.solveroutput.insert(END, self.loc['alg_solin_desc2'])
+        elif self.selalgoritmo.get() == 'Transporte':
+            self.solveroutput.insert(END, self.loc['alg_transportation_desc'])
+            self.solveroutput.insert(END, self.loc['alg_transportation_desc2'])
+        self.solveroutput.insert(END, self.loc['labelframe3_msg_waiting_problem'])
 
     def modosubpanelupdate(self):
         self.clearPanelModo()
@@ -437,10 +645,10 @@ class Aplicacion():
         """
         self.buildGraph()
         if self.operationStatus != 2:
-            messagebox.showwarning("Configuración sin finalizar", "Configura los datos del problema (si es necesario) y pulsa 'Actualizar datos' antes de continuar.")
+            messagebox.showwarning(self.loc['error_solve_noconfig_title'], self.loc['error_solve_noconfig_desc'])
             return
         if not self.checkConnectivity():
-            messagebox.showwarning("Conectividad del grafo", "El grafo introducido no parece ser conexo. Puedes utilizar un algoritmo sobre cada componente conexa o revisar la matriz de costes.")
+            messagebox.showwarning(self.loc['error_solve_connectivity_title'], self.loc['error_solve_connectivity_desc'])
             return
         if self.selalgoritmo.get() == "Dijkstra":
             self.solveDijkstra()
@@ -484,10 +692,13 @@ class Aplicacion():
 
     def reconfigurate(self):
         self.dropMatrix()
-        self.buttoncontinue.configure(text="Preparar matriz", command=self.generateMatrix)
+        self.buttoncontinue.configure(text=self.loc['labelframe1_button_setupmatrix'], command=self.generateMatrix)
         self.switchMatrixButtons('disabled')
         self.switchConfiguration('enabled')
-
+        #Update info panel
+        self.solveroutput.delete('1.0',END)
+        self.writeprobleminfo()
+        
     def buildGraph(self):
         """
         Encontrar nodos y aristas y construir el grafo del problema
@@ -548,7 +759,7 @@ class Aplicacion():
 
     def solveDijkstra(self):
         self.solveroutput.delete('1.0',END)
-        self.solveroutput.insert(END, "Resolución del problema mediante el algoritmo de Dijkstra: \n \n")
+        self.solveroutput.insert(END, self.loc['dijkstra_pipeline_title'])
         self.solveroutput.insert(END, "k=0 \n")
         nodoOrigen = int(self.firstnodedijkstra.get())
         nodoDestino = int(self.lastnodedijkstra.get())
@@ -563,7 +774,7 @@ class Aplicacion():
             else: 
                 self.solveroutput.insert(END, "V0({})=inf \n".format(nodo))
                 V0[nodo] = inf
-        self.solveroutput.insert(END, "Nodo óptimo: {} \nM=[{}] \n".format(nodoOrigen,nodoOrigen))
+        self.solveroutput.insert(END, self.loc['dijkstra_pipeline_1'].format(nodoOrigen,nodoOrigen))
         while True:
             k = k + 1
             V1 = {}
@@ -576,14 +787,14 @@ class Aplicacion():
                 if valorOptimo == V1[key]:
                     nodoOptimo = key
             M.append(nodoOptimo)
-            self.solveroutput.insert(END, "Nodo óptimo: {} \nM={} \n".format(nodoOptimo,str(M)))
+            self.solveroutput.insert(END, self.loc['dijkstra_pipeline_2'].format(nodoOptimo,str(M)))
             V0 = V1.copy()
             if M[-1] == nodoDestino: break
-        self.solveroutput.insert(END, "\nEl algoritmo ha finalizado. La distancia mínima del nodo origen al nodo destino es {}. \n".format(V0[nodoDestino]))
+        self.solveroutput.insert(END, self.loc['dijkstra_pipeline_3'].format(V0[nodoDestino]))
     
     def solveBellman(self):
         self.solveroutput.delete('1.0',END)
-        self.solveroutput.insert(END, "Resolución del problema mediante el algoritmo de Bellman-Kalaba: \n \n")
+        self.solveroutput.insert(END, self.loc['bellman_pipeline_title'])
         self.solveroutput.insert(END, "k=0 \n")
         nodoFinal = int(self.lastnodebellman.get())
         V0={}
@@ -605,11 +816,11 @@ class Aplicacion():
                 self.solveroutput.insert(END, "V{}({})={} \n".format(k,nodo,V1[nodo]))
             if V1 == V0: break
             V0 = V1.copy()
-        self.solveroutput.insert(END, "\nEl algoritmo ha finalizado. Las distancias mínimas de cada uno de los nodos al nodo final son los valores de V de la última iteracción. \n")
+        self.solveroutput.insert(END, self.loc['bellman_pipeline_1'])
 
     def solveFloyd(self):
         self.solveroutput.delete('1.0',END)
-        self.solveroutput.insert(END, "Resolución del problema mediante el algoritmo de Floyd: \n \n")
+        self.solveroutput.insert(END, self.loc['floyd_pipeline_title'])
         self.solveroutput.insert(END, "k=1 \n")
         numNodos = int(self.entrynumnodos.get())
         matrizCostes = {}
@@ -617,10 +828,10 @@ class Aplicacion():
             if self.matriz[key].get() == '' or self.matriz[key].get() == '0': matrizCostes[key] = inf
             else: matrizCostes[key] = int(self.matriz[key].get())
         penultimosNodos = {(i,j):i for i in range(numNodos) for j in range(numNodos)}
-        self.outputText("Matriz costes: \n")
+        self.outputText(self.loc['floyd_pipeline_1'])
         for i in range(numNodos):
             self.outputText("{}\n".format(str([matrizCostes[(i,j)] for j in range(numNodos)])))
-        self.outputText("Matriz penúltimos nodos: \n")
+        self.outputText(self.loc['floyd_pipeline_2'])
         for i in range(numNodos):
             self.outputText("{}\n".format(str([penultimosNodos[(i,j)] for j in range(numNodos)])))
         k = 0
@@ -628,25 +839,25 @@ class Aplicacion():
             if k != numNodos-1:
                 self.outputText("\nk={} \n".format(k+2))
             else:
-                self.outputText("\nFinal:\n")
+                self.outputText(self.loc['floyd_pipeline_3'])
             for i in range(numNodos):
                 for j in range(numNodos):
                     if i==k or j==k: continue
                     if matrizCostes[(i,k)]+matrizCostes[(k,j)] < matrizCostes[(i,j)]:
                         penultimosNodos[(i,j)] = penultimosNodos[(k,j)]
                         matrizCostes[(i,j)] = matrizCostes[(i,k)] + matrizCostes[(k,j)]
-            self.outputText("Matriz costes: \n")
+            self.outputText(self.loc['floyd_pipeline_1'])
             for i in range(numNodos):
                 self.outputText("{}\n".format(str([matrizCostes[(i,j)] for j in range(numNodos)])))
-            self.outputText("Matriz penúltimos nodos: \n")
+            self.outputText(self.loc['floyd_pipeline_2'])
             for i in range(numNodos):
                 self.outputText("{}\n".format(str([penultimosNodos[(i,j)] for j in range(numNodos)])))
             k = k + 1
-        self.outputText("\nEl algoritmo ha finalizado. La matriz de costes del final contiene los caminos mínimos para ir de un nodo a otro y la matriz de penúltimos nodos del final contiene los penúltimos nodos de los caminos mínimos que unen dos nodos. \n")
+        self.outputText(self.loc['floyd_pipeline_4'])
             
     def solveSolin(self,mode):
         self.solveroutput.delete('1.0',END)
-        self.solveroutput.insert(END, "Resolución del problema mediante el algoritmo de Solin: \n \n")
+        self.solveroutput.insert(END, self.loc['solin_pipeline_title'])
         numNodos = int(self.entrynumnodos.get())
         matrizCostes = {}
 
@@ -690,7 +901,7 @@ class Aplicacion():
             searchTarget = []
             for key in keys:
                 searchTarget.append([matrizCostes[(key[1],j)] for j in range(numNodos) if j not in columnasExcluidas])
-        self.outputText("\nEl algoritmo ha finalizado. La matriz que se presenta a continuación es la que queda tras aplicar el algoritmo de Solin: \n")
+        self.outputText(self.loc['solin_pipeline_1'])
         
         for key in matrizCostes:
             if key not in keys: matrizCostes[key] = '-'  
@@ -767,21 +978,22 @@ class Aplicacion():
         exp = pulp.LpAffineExpression(conf)
         problema += exp
         #Resultado del problema
-        self.solveroutput.insert(END, "\nInformación del problema\n" + 35*'-' + '\n')
+        self.solveroutput.insert(END, self.loc['transportation_pipeline_title'] + 35*'-' + '\n')
         self.solveroutput.insert(END, repr(problema) + "\n")
         problema.solve()
-        self.solveroutput.insert(END, "Estado del problema: {}".format(pulp.LpStatus[problema.status]))
-        self.solveroutput.insert(END, "\nValor de la función objetivo: {}".format(pulp.value(problema.objective)))
-        self.solveroutput.insert(END, "\nVariables:\n")
+        self.solveroutput.insert(END, self.loc['transportation_pipeline_1'].format(pulp.LpStatus[problema.status]))
+        self.solveroutput.insert(END, self.loc['transportation_pipeline_2'].format(pulp.value(problema.objective)))
+        self.solveroutput.insert(END, self.loc['transportation_pipeline_3'])
         for v in problema.variables():
             self.solveroutput.insert(END, str(v.name) + '=' + str(v.varValue) + '\n')
 
 class ElementViewTransporte():
-    def __init__(self,master,nodo,masterSelf):
+    def __init__(self,master,nodo,masterSelf,loc):
+        self.loc = loc
         self.principal = master
         self.root = Toplevel(master)
         self.root.grab_set()
-        self.root.title("Ajustar nodo {}".format(nodo))
+        self.root.title(self.loc['gui2_title'].format(nodo))
         w = self.root.winfo_reqwidth()
         h = self.root.winfo_reqheight()
         ws = self.root.winfo_screenwidth()
@@ -799,14 +1011,14 @@ class ElementViewTransporte():
         self.botonera = ttk.Frame(self.root)
 
         self.origendestinoVar = IntVar(self.root)
-        self.origenCheck = ttk.Radiobutton(self.panelorigen, text="Origen", variable=self.origendestinoVar, command=self.origenCallback, value=1)
-        self.producionLabel = ttk.Label(self.panelorigen, text="Producción:")
+        self.origenCheck = ttk.Radiobutton(self.panelorigen, text=self.loc['gui2_radio1'], variable=self.origendestinoVar, command=self.origenCallback, value=1)
+        self.producionLabel = ttk.Label(self.panelorigen, text=self.loc['gui2_label1'])
         self.producionEntry = ttk.Entry(self.panelorigen, width=7)
-        self.destinationCheck = ttk.Radiobutton(self.paneldestino, text="Destino", variable=self.origendestinoVar, command=self.destinationCallback, value=2)
-        self.demandaLabel = ttk.Label(self.paneldestino, text="Demanda:")
+        self.destinationCheck = ttk.Radiobutton(self.paneldestino, text=self.loc['gui2_radio2'], variable=self.origendestinoVar, command=self.destinationCallback, value=2)
+        self.demandaLabel = ttk.Label(self.paneldestino, text=self.loc['gui2_label2'])
         self.demandaEntry = ttk.Entry(self.paneldestino, width=7)
-        self.exitButton = ttk.Button(self.botonera, text="Guardar", command=self.save)
-        self.none = ttk.Radiobutton(self.botonera, text="Nodo intermedio", variable=self.origendestinoVar, value=3, command=self.mediumNodeCallback)
+        self.exitButton = ttk.Button(self.botonera, text=self.loc['gui2_save_button'], command=self.save)
+        self.none = ttk.Radiobutton(self.botonera, text=self.loc['gui2_radio3'], variable=self.origendestinoVar, value=3, command=self.mediumNodeCallback)
 
         datosNodo = self.masterSelf.getDemandasProducciones(self.nodo)
         if datosNodo[0] == 0:
