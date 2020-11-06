@@ -10,7 +10,7 @@ Pio is able to use the next algorithms:
 - ***Floyd's algorithm***. Finds the shortest paths between every pair of nodes of the graph.
 - ***Solin's algorithm***. Finds the minimum or maximum spanning tree of a graph.
 
-Besides the use of these algorithms, Pio can solve the transportation problem (following the transportation model + intermediate nodes) posing the equations and solving them with linear programming.
+Besides the use of these algorithms, Pio can solve the **transportation problem** (following the transportation model + intermediate nodes) posing the equations and solving them with linear programming.
 
 Pio offers a step by step resolution of each algorithm in addition to the final solution. This GUI is aimmed for helping students learn and understand the classic algorithms for graph theory and its use.
 
