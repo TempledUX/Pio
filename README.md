@@ -1,16 +1,14 @@
 # Pio
-Pio es una implementación en Python de una interfaz gráfica utilizando la librería tkinter para el cómputo de algoritmos clásicos de la teoría de grafos.
+Pio is a GUI built over Python tkinter for solving classic problems from graph theory.
 
-Pio es capaz de utilizar los siguientes algoritmos:
-- Algoritmo de Dijkstra. Permite encontrar la distancia mínima entre dos nodos de un grafo.
-- Algoritmo de Bellman-Kalaba. Permite encontrar los caminos mínimos desde cualquier nodo del grafo hasta un nodo final.
-- Algoritmo de Floyd. Permite encontrar los caminos mínimos entre dos cualesquiera pares de nodos de un grafo.
-- Algoritmo de Solin. Permite encontrar el árbol recubridor máximo/mínimo de un grafo.
+Pio is able to use the next algorithms:
+- Dijkstra's algorithm. Finds the shortest path between two selected nodes of the graph.
+- Bellman-Kalaba's algorithm. Finds the shortest paths from every node of the graph to a destination node.
+- Floyd's algorithm. Finds the shortest paths between every pair of nodes of the graph.
+- Solin's algorithm. Finds the minimum or maximum spanning tree of a graph.
 
-Además puede trabajar con el problema de transporte (siguiendo el modelo de transporte + nodos intermedios) planteando las ecuaciones y resolviéndolo mediante programación lineal.
+Besides the use of these algorithms, Pio can solve the transportation problem (following the transportation model + intermediate nodes) posing the equations and solving them with linear programming.
 
-Pio ofrece la resolución paso por paso de cada algoritmo además de la solución final.
+Pio offers a step by step resolution of each algorithm in addition to the final solution. This GUI is aimmed for helping students learn and understand the classic algorithms for graph theory and its use.
 
-### Cosas que faltan por implementar (en progreso)
-- Opción de guardar la información del problema y el resultado en un archivo y después poder cargarlo desde el programa.
-- Localización en más idiomas (de momento solo disponible en español)
+Languages supported: English, Spanish.
